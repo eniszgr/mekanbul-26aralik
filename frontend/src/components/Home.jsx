@@ -9,12 +9,12 @@ const Home = () => {
     lat: 1,
     long: 1,
   });
-
   const dispatch = useDispatch();
   const venues = useSelector((state) => state.data);
   const isError = useSelector((state) => state.isError);
   const isLoading = useSelector((state) => state.isLoading);
   const isSuccess = useSelector((state) => state.isSuccess);
+  const [searchVenue, setSearchVenue] = React.useState("");
 
   React.useEffect(() => {
     if ("geolocation" in navigator) {
@@ -25,17 +25,29 @@ const Home = () => {
         });
       });
     }
-  });
+  }, []);
+
   React.useEffect(() => {
     dispatch({ type: "FETCH_INIT" });
     VenueDataService.nearbyVenues(coordinate.lat, coordinate.long)
-      .then((response) => {
+      .then(function (response) {
         dispatch({ type: "FETCH_SUCCESS", payload: response.data });
       })
-      .catch(() => {
+      .catch(function () {
         dispatch({ type: "FETCH_FAILURE" });
       });
   }, [coordinate.lat, coordinate.long]);
+
+  const search = (event) => {
+    setSearchVenue(event.target.value);
+  };
+
+  const filteredVenues = Array.isArray(venues) 
+    ? venues.filter((venue) =>
+        venue.name.toLowerCase().includes(searchVenue.toLowerCase()) ||
+        venue.address.toLowerCase().includes(searchVenue.toLowerCase())
+      )
+    : [];
 
   return (
     <div>
@@ -48,28 +60,21 @@ const Home = () => {
         label="Mekan Ara:"
         type="text"
         isFocused
-        onInputChange={() => null}
-        value={" "}
+        onInputChange={search}
+        value={searchVenue}
       />
       <hr />
       <div className="row">
-        <div className="row">
-          {isError ? (
-            <p>
-              <strong>Hata var!</strong>
-            </p>
-          ) : isLoading ? (
-            <p>
-              <strong>Mekanlar Yükleniyor ...</strong>
-            </p>
-          ) : (
-            isSuccess && (
-              <div className="row">
-                <VenueList venues={venues} />
-              </div>
-            )
-          )}
-        </div>
+        {isError ? (
+          <p>Hata var.</p>
+        ) : isLoading ? (
+          <p>Mekanlar Yükleniyor...</p>
+        ) : (
+          isSuccess &&
+          <div className="row">
+            <VenueList venues={filteredVenues} />
+          </div>
+        )}
       </div>
     </div>
   );
