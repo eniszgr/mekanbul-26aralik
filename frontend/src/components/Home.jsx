@@ -4,6 +4,7 @@ import Header from "./Header";
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import VenueDataService from "../services/VenueDataService";
+
 const Home = () => {
   const [coordinate, setCoordinate] = React.useState({
     lat: 1,
@@ -36,7 +37,7 @@ const Home = () => {
       .catch(function () {
         dispatch({ type: "FETCH_FAILURE" });
       });
-  }, [coordinate.lat, coordinate.long]);
+  }, [coordinate.lat, coordinate.long, dispatch]);
 
   const search = (event) => {
     setSearchVenue(event.target.value);
